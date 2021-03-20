@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<title>Jade Delight</title>
+
+<!-- error message css style -->
+<style type="text/css">
+	.errMsg {color: #D20E11; border: solid 1px #d20e11; display:none;  padding: 1px 15px;	}
+</style>
+<script language="javascript">
+
+// a global variable to store the total value from cal()
+display_total = 0;
+
+// initiates when form goes onsubmit to validate
+// whether the form meets all the requirements
+function validate()
+{
+	current_date = new Date();
+	
+	// initializing variables
+	estimated_date = 0;
+	estimated_message = "";
+	order_message = "Ordered Item(s)\n";
+	err = false;
+	
+	// place to store values from other functions (such as .change()) to
+	// display it back to user
+	sum = 0;
+	
+	// since I stored price values in an array in another function, to tell user
+	// about quantity, I needed another array to store values back as quantity. 
+	quan_arr = [0, 0, 0, 0, 0];
+	
+	for (i=0; i < 5; i++) {
+		sum += arr_cost[i];
+
+		if (arr_cost[i] != 0) {
+			quan_arr[i] = arr_cost[i] / menuItems[i].cost
+		}
+	}
+	
+	// alert user if no item is selected
+	if (sum == 0) {
+		alert("At least one item must be ordered");
+		err = true;
+	}
+	// creates the order message
+	for (i=0; i < 5; i++) {
+		if (quan_arr[i] != 0) {
+			order_message += quan_arr[i] + " " + menuItems[i].name + "\n";
+		}		
+	}
+
+	
+	document.getElementById("errPhone").style.display = "none";
+	document.getElementById("errName").style.display = "none";
+	document.getElementById("errCity").style.display = "none";
+	document.getElementById("errStreet").style.display = "none";
+	
+	with (document.data)
+	{	console.log(phone.value);
+		if (phone.value=="")
+		{
+			document.getElementById("errPhone").style.display = "inline-block";
+			phone.focus();
+			err=true;
+		} else {
+			// regular expression for U.S. phone number
+			// (also work with country code)
+			
+            regex = /^(\+\d{1,2}\s?)?1?\-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
+            string = phone.value;
+			// compare it with user input and let user know
+			// if user did not type proper phone number
+            res = regex.test(phone.value);
+            if (res == false) {
+                alert("Invalid phone number");
+				err=true;
+            }
+        }
+
+        // display error message if last name section was left empty
+		if (lname.value=="")
+		{
+			document.getElementById("errName").style.display = "inline-block";
+			lname.focus();
+			err=true;
+		}
+        
+        // if pick up radio button was selected, calculate estimate pick up time
+		if (document.getElementById('pickup').checked){
+			
+			estimated_date = new Date(current_date.getTime() + 15*60000);
+			estimated_date = estimated_date.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'});
+			estimated_message += "Estimated pickup time is " + estimated_date + "\n";
+			
+        } else if (document.getElementById('delivery').checked) {
+			// if delivery radio button was selected, check whether address sections are not left empty
+			if (city.value=="")
+			{
+				document.getElementById("errCity").style.display = "inline-block";
+				city.focus();
+				err=true;
+			}
+			
+			if (street.value=="")
+			{
+				document.getElementById("errStreet").style.display = "inline-block";
+				street.focus();
+				err=true;
+			}
+			// change the value of date to hours and minutes and creates message
+            estimated_date = new Date(current_date.getTime() + 30*60000);
+			estimated_date = estimated_date.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'});
+			estimated_message += "Estimated delivery time is " + estimated_date + "\n";
+        }
+	}
+	// if there was no error, display the order confirmation message
+	if (err == false) {
+		alert("Thank you for your order!\n" + order_message + "\n" +
+			  estimated_message +
+			  "Your total : $" + display_total.toFixed(2) + "!");
+	} 
+	
+	return !err;
+}
+</script>
+</head>
+
+<body>
+<script language="javascript">
+
+function MenuItem(name, cost)
+{
+	this.name = name;
+	this.cost=cost;
+}
+
+menuItems = new Array(
+	new MenuItem("Chicken Chop Suey", 4.5),
+	new MenuItem("Sweet and Sour Pork", 6.25),
+	new MenuItem("Shrimp Lo Mein", 5.25),
+	new MenuItem("Moo Shi Chicken", 6.5),
+	new MenuItem("Fried Rice", 2.35)
+);
+
+function makeSelect(name, minRange, maxRange)
+{
+	var t= "";
+	t = "<select name='" + name + "' size='1'>";
+	for (j=minRange; j<=maxRange; j++)
+	   t += "<option>" + j + "</option>";
+	t+= "</select>"; 
+	return t;
+}
+</script>
+
+<h1>Jade Delight</h1>
+<form name = "data" method="post" onsubmit="return validate()">
+
+<p>First Name: <input type="text"  name='fname' /></p>
+<p>Last Name*:  <input type="text"  name='lname' /></p><div id="errName" class="errMsg">Last name is required</div>
+<p id='street' style="display:none;">Street: <input type="text"  name='street' /></p><div id="errStreet" class="errMsg">Street is required</div>
+<p id='city' style="display:none;">City: <input type="text"  name='city' /></p><div id="errCity" class="errMsg">City is required</div>
+<p>Phone*: <input type="text"  name='phone' /></p><div id="errPhone" class="errMsg">Phone is required</div>
+<p id='radio'> 
+	<input type="radio"  name="p_or_d" value = "pickup" checked="checked" id="pickup"/>Pickup  
+	<input type="radio"  name='p_or_d' value = 'delivery' id="delivery"/>
+	Delivery
+</p>
+<table border="0" cellpadding="3">
+  <tr>
+    <th>Select Item</th>
+    <th>Item Name</th>
+    <th>Cost Each</th>
+    <th>Total Cost</th>
+  </tr>
+<script language="javascript">
+
+  var s = "";
+  for (i=0; i< menuItems.length; i++)
+  {
+	  s += "<tr><td>";
+	  s += makeSelect("quan" + i, 0, 10);
+	  s += "</td><td>" + menuItems[i].name + "</td>";
+	  s += "<td> $ " + menuItems[i].cost.toFixed(2) + "</td>";
+	  s += "<td>$<input type='text' name='cost'/></td></tr>";
+  }
+  document.writeln(s);
+</script>
+</table>
+
+
+
+<script language="javascript">
+
+	// an array to store price values for each menu item
+	arr_cost = [0, 0, 0, 0, 0];
+	
+	// display the calculated total for each items to the corresponding slot
+	// if any of the select tag with the name that has 'quan', this function will operate
+    $('select[name^="quan"]').change(function () {
+		quan = this.value;
+		// since value of selected option is 'quan' + i, slice it and store only i part to get the index in menuItems.
+        item_number = this.name.slice(4);
+	
+		price = (quan * menuItems[item_number].cost).toFixed(2);
+		arr_cost[item_number] = price;
+		
+		// goes to the last tr of currently selected row, and display price value
+		tr = $(this).closest('tr');
+		tr.find('td:nth-child(4) input').attr('value', price);
+		
+		// update subtotal, tax, and total
+		cal();
+	});
+	
+	
+	
+	function cal()
+	{
+		subtotal = 0;
+		mass_tax = 0.0625;
+		
+		for (i = 0; i < arr_cost.length; i++) {
+
+			subtotal += parseFloat(arr_cost[i]);
+		}
+		
+		tax = mass_tax * subtotal;
+		total = subtotal + tax;
+		display_total = total;
+		$('#subtotal').val(subtotal.toFixed(2));
+		$('#tax').val(tax.toFixed(2));
+		$('#total').val(total.toFixed(2));
+	}
+
+	$('#radio').change(function() {
+			$('#city, #street').toggle();
+			// if onsubmit at the end made errmsg displayed, turn it off
+			// when the different button is selected
+			document.getElementById("errPhone").style.display = "none";
+			document.getElementById("errName").style.display = "none";
+			document.getElementById("errCity").style.display = "none";
+			document.getElementById("errStreet").style.display = "none";
+		});
+
+	
+
+
+</script>
+
+
+<p>Subtotal: 
+   $<input type="text"  name='subtotal' id="subtotal" />
+</p>
+<p>Mass tax 6.25%:
+  $ <input type="text"  name='tax' id="tax" />
+</p>
+<p>Total: $ <input type="text"  name='total' id="total" />
+</p>
+
+<input type = "submit" value = "Submit Order"/>
+
+</form>
+</body>
+</html>
